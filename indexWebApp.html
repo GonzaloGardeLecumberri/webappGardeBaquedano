@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+ 	<meta charset="UTF-8">
+ 	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.css" >
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" >
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-grid.css" >
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-grid.min.css" >
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-reboot.css" >
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-reboot.min.css" >
+	<link rel="stylesheet" type="text/css" href="css/fontawesome-all.css" >
+
+	<title>Paco Paco</title>
+</head>
+<body>
+	<nav class="navbar navbar-expand-md navbar-light bg-dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="#"><img  class="img-responsive" src="logo-parlamento.png" alt="Logo1"></a>
+
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#datos">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="datos">
+				<ul class="nav navbar-bar ">
+					<a class="nav-link " href="/">
+						Chat de Chates
+					</a>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row border border-dark" id="mensajesRecibidos" style="overflow-y:scroll; padding-bottom:5px">
+			
+		</div>
+		<div class="row" style="margin-top:5px" id="parte2" style="overflow-y:scroll">
+			<div class="col-12 col-md-6 col-lg-7 col-xl-8">
+				<form id="formMensaje" method="POST">
+					<label for="mensajeUsuario">Introduzca su mensaje para enviar</label>
+					<textarea class="form-control" id="mensajeUsuario" rows="3" name="mensaje"></textarea>
+					<button type="submit" class="btn btn-primary mb-2 mt-2">Enviar</button>
+				</form>
+			</div>
+			<div class="col-12 col-md-6 col-lg-5 col-xl-4">
+				<table class="table">
+					<thead class="thead-dark">
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">Nombre Usuario</th>
+							<th scope="col">Estado</th>
+						</tr>
+					</thead>
+					<tbody id="usuariosConectados">
+						
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.bundle.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/bootstrap.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/fontawesome-all.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	var socket = io.connect({'sync disconnect on unload':true});
+
+	socket.on('volverAPedir', function(datos){
+		var usuario = prompt(datos);
+		console.log("Emitiendo nombre usuario");
+		socket.emit('nick', {nombreUser: usuario});
+		console.log(usuario);
+	});
+	var miNombre;
+	var miColor;
+	var padre = $('#usuariosConectados');
+	var tamVentana = $(window).height();
+	$('#mensajesRecibidos').css("max-height",tamVentana*0.9*0.7);
+
+	$(window).resize(function(event) {
+		var tamVentana = $(window).height();
+		$('#mensajesRecibidos').css("max-height",tamVentana*0.9*0.7);
+		$('#parte2').css("height",tamVentana*0.9*0.3);
+	});
+
+	socket.on('ponteAlDia', function(conectados, mensajes, nombre, color){
+		console.log('Esta conectado '+conectados[0].id);
+		console.log(mensajes[0]);
+		miNombre = nombre;
+		miColor = color;
+		var numero = 1;
+		conectados.forEach(function(conectado){
+			var nombre = conectado.id;
+			var nombreSin = nombre.replace(/ /g, '_');
+			var frase = `
+				<tr id="${nombre}" data-numero="${numero}">
+					<th scope="row">${numero}</th>
+					<th>${nombre}</th>
+					<th id="estado${nombreSin}">Conectado</th>
+				</tr>
+			`;
+			padre.append(frase);
+			numero++;
+		});
+		mensajes.forEach(function(cadaMensaje){
+			var anadir2= `
+				<div class='offset-3 col-6 text-left text-black border border-dark rounded' style="margin-top:5px;margin-bottom:5px;color:#A6ACAF">
+					<p>${cadaMensaje.usuario}</p>
+					<p>${cadaMensaje.mensajeEnviar}</p>
+					<p>${cadaMensaje.fecha}</p>
+				</div>
+			`;
+			$('#mensajesRecibidos').append(anadir2);
+		});
+		var anadir= `
+			<div class="col-12 text-center">
+					<hr>
+					<p>Mensajes Antiguos</p>
+					<hr>
+			</div>
+			`;
+		$('#mensajesRecibidos').append(anadir);
+		
+	});
+
+	socket.on('clienteDesconectado', function(clientes, nombreDesc){
+		console.log('Se ha desconectado '+nombreDesc);
+		padre.empty();
+		var numero = 1;
+		clientes.forEach(function(conectado){
+			var nombre = conectado.id;
+			var nombreSin = nombre.replace(/ /g, '_');
+			var frase = `
+				<tr id="${nombre}" data-numero="${numero}">
+					<th scope="row">${numero}</th>
+					<th>${nombre}</th>
+					<th id="estado${nombreSin}">Conectado</th>
+				</tr>
+			`;
+			padre.append(frase);
+			numero++;
+		});
+		var anadir= `
+			<div class="col-12 text-center">
+					<hr>
+					<p>Se ha desconectado el usuario ${nombreDesc}</p>
+					<hr>
+			</div>
+			`;
+		$('#mensajesRecibidos').append(anadir);
+	});
+
+	socket.on('nuevoClienteConectado', function(clientes, nombreCon){
+		console.log('Se ha conectado '+nombreCon);
+		padre.empty();
+		var numero = 1;
+		clientes.forEach(function(conectado){
+			var nombre = conectado.id;
+			var nombreSin = nombre.replace(/ /g, '_');
+			var frase = `
+				<tr id="${nombre}" data-numero="${numero}">
+					<th scope="row">${numero}</th>
+					<th>${nombre}</th>
+					<th id="estado${nombreSin}">Conectado</th>
+				</tr>
+			`;
+			padre.append(frase);
+			numero++;
+		});
+		var anadir= `
+				<div class="col-12 text-center">
+					<hr>
+					<p>Se ha conectado el usuario ${nombreCon}</p>
+					<hr>
+				</div>
+			`;
+		$('#mensajesRecibidos').append(anadir);
+	});
+
+	$('#formMensaje').on('submit', function(event) {
+		event.preventDefault();
+		var time = new Date();
+		var hora = time.getHours();
+		var min = time.getMinutes();
+		var fecha = hora+":"+min;
+		var nuevoMensaje = $('#formMensaje textarea[name=mensaje]').val();
+		var anadir= `
+			<div class='offset-4 col-6  text-right border border-info rounded' style="margin-top:5px;margin-bottom:5px;color:${miColor}">
+				<p>Yo</p>
+				<p>${nuevoMensaje}</p>
+				<p>${fecha}</p>
+			</div>
+		`;
+		$('#mensajesRecibidos').append(anadir);
+		socket.emit('enviarMensajeChat', {mensajeEnviar: nuevoMensaje, fecha: fecha, usuario: miNombre, color: miColor});
+		$('#formMensaje').each(function(){
+			this.reset();
+		});
+	});
+
+	socket.on('nuevoMensajeChat', function(datos){
+		var anadir2= `
+			<div class='offset-2 col-6 text-left text-black border border-dark rounded' style="margin-top:5px;margin-bottom:5px;color:${datos.color}">
+				<p>${datos.usuario}</p>
+				<p>${datos.mensajeEnviar}</p>
+				<p>${datos.fecha}</p>
+			</div>
+		`;
+		$('#mensajesRecibidos').append(anadir2);
+	});
+
+	var inicioTemp = false;
+	var tiempo = 0;
+	$('#mensajeUsuario').keypress(function(event) {
+		var nombreSin = "#estado"+miNombre.replace(/ /g, '_');
+		socket.emit('usuarioEscribiendo', nombreSin);
+		$(nombreSin).empty();
+		$(nombreSin).append("Escribiendo");
+		if (inicioTemp){
+			console.log("Hola, reseteando");
+			clearTimeout(tiempo);
+		}
+		inicioTemp = true;
+		tiempo = setTimeout(function(){
+			console.log("Hola, haciendo");
+			$(nombreSin).empty();
+			$(nombreSin).append("Conectado");
+			inicioTemp = false;
+		},2500);
+	});
+
+	var inicioTemp2 = false;
+	var tiempo = 0;
+	socket.on('escribiendo', function(nombreSin){
+		$(nombreSin).empty();
+		$(nombreSin).append("Escribiendo");
+		if (inicioTemp2){
+			console.log("Hola, reseteando");
+			clearTimeout(tiempo2);
+		}
+		inicioTemp2 = true;
+		var tiempo2 = setTimeout(function(){
+			console.log("Hola, haciendo");
+			$(nombreSin).empty();
+			$(nombreSin).append("Conectado");
+			inicioTemp2 = false;
+		},2500);
+
+	});
+});
+</script>
+</body>
