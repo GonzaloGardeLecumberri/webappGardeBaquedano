@@ -16,7 +16,7 @@
 <body>
 	<nav class="navbar navbar-expand-md navbar-light bg-dark scrolling-navbar">
 		<div class="container-fluid">
-			<a class="navbar-brand" href="#"><img src="chat-logo2.png" height="60"alt="Logo1"></a>
+			<a class="navbar-brand" href="#"><img src="chat-logo2.png" height="60" alt="Logo1"></a>
 
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#datos">
 				<span class="navbar-toggler-icon"></span>
@@ -33,10 +33,10 @@
 	</nav>
 
 	<div class="container">
-		<div class="row border border-dark" id="mensajesRecibidos" style="overflow-y:scroll; padding-bottom:5px">
+		<div class="row" id="mensajesRecibidos" style="overflow-y:scroll; padding-bottom:5px">
 			
 		</div>
-		<div class="row" style="margin-top:5px" id="parte2" style="overflow-y:scroll">
+		<div class="row" style="margin-top:15px" id="parte2" style="overflow-y:scroll">
 			<div class="col-12 col-md-6 col-lg-7 col-xl-8">
 				<form id="formMensaje" method="POST">
 					<label for="mensajeUsuario">Introduzca su mensaje para enviar</label>
@@ -111,7 +111,8 @@ $(document).ready(function(){
 		});
 		mensajes.forEach(function(cadaMensaje){
 			var anadir2= `
-				<div class='offset-3 col-6 text-left text-black border border-dark rounded' style="margin-top:5px;margin-bottom:5px;color:#A6ACAF">
+				<div class='offset-3 col-6 text-left text-dark' style="margin-top:5px;margin-bottom:5px;border-left: 6px solid black;
+    background-color: lightgrey;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);">
 					<p>${cadaMensaje.usuario}</p>
 					<p>${cadaMensaje.mensajeEnviar}</p>
 					<p>${cadaMensaje.fecha}</p>
@@ -192,7 +193,8 @@ $(document).ready(function(){
 		var fecha = hora+":"+min;
 		var nuevoMensaje = $('#formMensaje textarea[name=mensaje]').val();
 		var anadir= `
-			<div class='offset-4 col-6  text-right border border-info rounded' style="margin-top:5px;margin-bottom:5px;color:${miColor}">
+			<div class='offset-4 col-6  text-right text-dark' style="margin-top:5px;margin-bottom:5px;border-right: 6px solid;border-right-color: ${miColor};
+    background-color: #c6e4ff;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);">
 				<p>Yo</p>
 				<p>${nuevoMensaje}</p>
 				<p>${fecha}</p>
@@ -207,7 +209,8 @@ $(document).ready(function(){
 
 	socket.on('nuevoMensajeChat', function(datos){
 		var anadir2= `
-			<div class='offset-2 col-6 text-left text-black border border-dark rounded' style="margin-top:5px;margin-bottom:5px;color:${datos.color}">
+			<div class='offset-2 col-6 text-left text-dark' style="margin-top:5px;margin-bottom:5px;border-left: 6px solid;border-left-color: ${datos.color};
+    background-color: lightgrey;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);">
 				<p>${datos.usuario}</p>
 				<p>${datos.mensajeEnviar}</p>
 				<p>${datos.fecha}</p>
